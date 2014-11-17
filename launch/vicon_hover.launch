@@ -1,0 +1,14 @@
+<launch>
+
+  <include file="$(find vicon_bridge)/launch/vicon.launch" />
+
+  <node name="rcbridge" pkg="rcbridge" type="rcbridge.py">
+    <rosparam param="failsafe">[0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5]</rosparam>
+  </node>
+
+  <node name="controller" pkg="qav250" type="qav250.py">
+    <remap from="drone" to="/vicon/QAV_Red/QAV_Red" />
+  </node>
+
+</launch>
+  
