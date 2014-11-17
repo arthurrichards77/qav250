@@ -1,0 +1,17 @@
+<package>
+  <description brief="qav250">
+
+     qav250
+
+  </description>
+  <author>User Account</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/qav250</url>
+  <depend package="vicon_bridge"/>
+  <depend package="rospid"/>
+  <depend package="rcbridge"/>
+
+</package>
+
+
