@@ -6,7 +6,7 @@ import numpy
 import rospid
 from rospy.numpy_msg import numpy_msg
 from rospy_tutorials.msg import Floats
-from geometry_msgs.msg import TransformStamped
+from geometry_msgs.msg import TransformStamped, Point
 
 class qav250:
 
@@ -16,6 +16,8 @@ class qav250:
     self.rc_pub = rospy.Publisher('rcctrl', numpy_msg(Floats))
     # subscriber for Vicon data
     self.vicon_sub = rospy.Subscriber('drone', TransformStamped, self.vicon_callback)
+    # subscriber for reference point input
+    self.point_sub = rospy.Subscriber('refpoint', Point, self.ref_callback)
     # PID controller for each axis
     self.pitch_pid = rospid.rospid(0.04,0.0,0.04,'pitch') # pitch
     self.roll_pid = rospid.rospid(0.04,0.0,0.04,'roll') # roll
@@ -23,6 +25,14 @@ class qav250:
     self.yaw_pid = rospid.rospid(0.5,0.0,0.0,'yaw') # yaw
     # freeze the thrust integrator until flying    
     self.thrust_pid.freeze_integrator()
+    # point reference input
+    self.ref_point = Point()
+    # default is at origin, 1m off ground
+    self.ref_point.z = 1.0
+
+  def ref_callback(self,data):
+    self.ref_point = data
+    rospy.loginfo('New reference received: (%f, %f, %f)', self.ref_point.x, self.ref_point.y, self.ref_point.z)
 
   def vicon_callback(self,data):
     #rospy.loginfo('%s',data)
@@ -35,10 +45,10 @@ class qav250:
     else:
       self.thrust_pid.freeze_integrator()
     # update each control loop
-    u_roll = self.roll_pid.update((-data.transform.translation.y), 0.0, t)
-    u_pitch = self.pitch_pid.update(data.transform.translation.x, 0.0, t)
+    u_roll = self.roll_pid.update((-data.transform.translation.y), (-self.ref_point.y), t)
+    u_pitch = self.pitch_pid.update(data.transform.translation.x, self.ref_point.x, t)
     u_yaw = self.yaw_pid.update((-data.transform.rotation.z), 0.0, t)
-    u_thrust = self.thrust_pid.update(data.transform.translation.z, 1.0, t)
+    u_thrust = self.thrust_pid.update(data.transform.translation.z, self.ref_point.z, t)
     # centre around 0.5 and limit
     c_roll = 0.5 + rospid.saturate(u_roll,0.25)
     c_pitch = 0.5 + rospid.saturate(u_pitch,0.25)
