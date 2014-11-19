@@ -17,9 +17,9 @@ class qav250:
     # subscriber for Vicon data
     self.vicon_sub = rospy.Subscriber('drone', TransformStamped, self.vicon_callback)
     # PID controller for each axis
-    self.pitch_pid = rospid.rospid(0.04,0.0,0.04,'pitch') # pitch
+    self.pitch_pid = rospid.rospid(0.05,0.0,0.05,'pitch') # pitch
     self.roll_pid = rospid.rospid(0.04,0.0,0.04,'roll') # roll
-    self.thrust_pid = rospid.rospid(0.04,0.02,0.04,'thrust') # height
+    self.thrust_pid = rospid.rospid(0.03,0.015,0.03,'thrust') # height
     self.yaw_pid = rospid.rospid(0.5,0.0,0.0,'yaw') # yaw
     # freeze the thrust integrator until flying    
     self.thrust_pid.freeze_integrator()
@@ -38,7 +38,7 @@ class qav250:
     u_roll = self.roll_pid.update((-data.transform.translation.y), 0.0, t)
     u_pitch = self.pitch_pid.update(data.transform.translation.x, 0.0, t)
     u_yaw = self.yaw_pid.update((-data.transform.rotation.z), 0.0, t)
-    u_thrust = self.thrust_pid.update(data.transform.translation.z, 1.0, t)
+    u_thrust = self.thrust_pid.update(data.transform.translation.z, 0.6, t)
     # centre around 0.5 and limit
     c_roll = 0.5 + rospid.saturate(u_roll,0.25)
     c_pitch = 0.5 + rospid.saturate(u_pitch,0.25)
