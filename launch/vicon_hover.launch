@@ -7,8 +7,10 @@
   </node>
 
   <node name="controller" pkg="qav250" type="qav250.py">
-    <remap from="drone" to="/vicon/QAV_new/QAV_new" />
+    <remap from="drone" to="/vicon/QAV_Colin/QAV_Colin" />
   </node>
+
+  <node name="rviz" pkg="rviz" type="rviz" />
 
 </launch>
   
