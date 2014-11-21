@@ -1,0 +1,40 @@
+<launch>
+
+  <include file="$(find vicon_bridge)/launch/vicon.launch" />
+
+  <node name="rcbridge" pkg="rcbridge" type="rcbridge.py">
+    <rosparam param="failsafe">[0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5]</rosparam>
+  </node>
+
+  <node name="controller" pkg="qav250" type="qav250.py">
+    <remap from="drone" to="/vicon/QAV_Colin/QAV_Colin" />
+
+    <param name="pitch/init_gains/kp" type="double" value="0.075" />
+    <param name="pitch/init_gains/ki" type="double" value="0.0" />
+    <param name="pitch/init_gains/kd" type="double" value="0.11" />
+
+    <param name="roll/init_gains/kp" type="double" value="0.075" />
+    <param name="roll/init_gains/ki" type="double" value="0.0" />
+    <param name="roll/init_gains/kd" type="double" value="0.11" />
+
+    <param name="yaw/init_gains/kp" type="double" value="0.25" />
+    <param name="yaw/init_gains/ki" type="double" value="0.0" />
+    <param name="yaw/init_gains/kd" type="double" value="0.0" />
+
+    <param name="thrust/init_gains/kp" type="double" value="0.2" />
+    <param name="thrust/init_gains/ki" type="double" value="0.03" />
+    <param name="thrust/init_gains/kd" type="double" value="0.15" />
+
+  </node>
+
+  <node pkg="rospid" name="pitchtune" type="tune_gui.py" ns="controller/pitch" />
+  <node pkg="rospid" name="rolltune" type="tune_gui.py" ns="controller/roll" />
+  <node pkg="rospid" name="yawtune" type="tune_gui.py" ns="controller/yaw" />
+  <node pkg="rospid" name="thrusttune" type="tune_gui.py" ns="controller/thrust" />
+
+  <node pkg="rxtools" name="posplot" type="rxplot" args="/vicon/QAV_Colin/QAV_Colin/transform/translation/x, /vicon/QAV_Colin/QAV_Colin/transform/translation/y, /vicon/QAV_Colin/QAV_Colin/transform/translation/z" />
+
+  <node name="rviz" pkg="rviz" type="rviz" />
+
+</launch>
+  
