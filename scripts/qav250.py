@@ -4,6 +4,8 @@ roslib.load_manifest('qav250')
 import rospy
 import numpy
 import rospidlib
+import tf
+import numpy as np
 from rospy.numpy_msg import numpy_msg
 from rospy_tutorials.msg import Floats
 from geometry_msgs.msg import TransformStamped, Point
@@ -29,18 +31,52 @@ class qav250:
     self.ref_point = Point()
     # default is at origin, 0.8m off ground
     self.ref_point.z = 0.8
+    # get min/max points
+    self.min_x = rospy.get_param('/min_x', -5.0)
+    self.min_y = rospy.get_param('/min_y', -5.0)
+    self.min_z = rospy.get_param('/min_z', 0.0)
+    self.max_x = rospy.get_param('/max_x', 5.0)
+    self.max_y = rospy.get_param('/max_y', 5.0)
+    self.max_z = rospy.get_param('/max_z', 5.0)
+    self.rel_threshold = rospy.get_param('/rel_threshold', 2.5)
+    #broadcast target point to RViz
+    self.target_br = tf.TransformBroadcaster()
 
   def ref_callback(self,data):
-    self.ref_point = data
-    rospy.loginfo('New reference received: (%f, %f, %f)', self.ref_point.x, self.ref_point.y, self.ref_point.z)
+    #Sanity check new refpoint
+    if self.check_absolute_ref(data):
+        if self.check_relative_ref(data):
+            self.ref_point = data
+            rospy.loginfo('New reference received: (%f, %f, %f)', self.ref_point.x, self.ref_point.y, self.ref_point.z)
+        else:
+            rospy.loginfo('New reference outside of relative limits')
+    else:
+        rospy.loginfo('New reference outside of absolute limits')
+
+  def check_absolute_ref(self,data):
+    return data.x >= self.min_x and data.x <= self.max_x and data.y >= self.min_y and data.y <= self.max_y and data.z >= self.min_z and data.z <= self.max_z
+
+  def check_relative_ref(self, data):
+    if hasattr(self, 'current_pos'):
+      xdiff = self.current_pos.x - data.x
+      ydiff = self.current_pos.y - data.y
+      zdiff = self.current_pos.z - data.z
+
+      rospy.loginfo('relative reference %f', np.sqrt(xdiff*xdiff+ydiff*ydiff+zdiff*zdiff))
+      return np.sqrt(xdiff*xdiff+ydiff*ydiff+zdiff*zdiff) < self.rel_threshold
+    else:
+      return True
 
   def vicon_callback(self,data):
+    self.current_pos = Point(data.transform.translation.x, data.transform.translation.y, data.transform.translation.z)
+    #publish current target point to Rviz
+    self.target_br.sendTransform((self.ref_point.x, self.ref_point.y, self.ref_point.z), (0.0, 0.0, 0.0, 1.0), rospy.Time.now(), "target", "world")
     #rospy.loginfo('%s',data)
     # extract the time in seconds
     t = data.header.stamp.to_sec()
     # t = data.header.stamp
     # only enable integral action when over 20cm off ground - to avoid wind-up
-    if data.transform.translation.z>0.2:
+    if data.transform.translation.z>0.3:
       self.pitch_pid.enable_integrator()
       self.roll_pid.enable_integrator()
       self.yaw_pid.enable_integrator()
@@ -73,3 +109,5 @@ class qav250:
 if __name__ == "__main__":
   q = qav250()
   rospy.spin()  
+
+
