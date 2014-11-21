@@ -4,6 +4,7 @@
 
   <node name="rcbridge" pkg="rcbridge" type="rcbridge.py">
     <rosparam param="failsafe">[0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5]</rosparam>
+    <param name="ipaddr" value="192.168.10.173" />
   </node>
 
   <node name="controller" pkg="qav250" type="qav250.py">
