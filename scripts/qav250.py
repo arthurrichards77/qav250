@@ -70,7 +70,8 @@ class qav250:
   def vicon_callback(self,data):
     self.current_pos = Point(data.transform.translation.x, data.transform.translation.y, data.transform.translation.z)
     #publish current target point to Rviz
-    self.target_br.sendTransform((self.ref_point.x, self.ref_point.y, self.ref_point.z), (0.0, 0.0, 0.0, 1.0), rospy.Time.now(), "target", "world")
+    self.target_br.sendTransform((self.ref_point.x, self.ref_point.y, self.ref_point.z), 
+		(0.0, 0.0, 0.0, 1.0), rospy.Time.now(), "control_ref_point", "world")
     #rospy.loginfo('%s',data)
     # extract the time in seconds
     t = data.header.stamp.to_sec()
