@@ -1,5 +1,5 @@
 #!/usr/bin/python
-
+import time
 import rospy
 from Tkinter import *
 import roslib
@@ -30,9 +30,9 @@ class App:
 		self.max_z = rospy.get_param('/max_z', 2.0)
 
 		#Get step sizes
-		self.x_step = rospy.get_param('/x_step', 0.5)
-		self.y_step = rospy.get_param('/y_step', 0.5)
-		self.z_step = rospy.get_param('/z_step', 0.2)
+		self.x_step = rospy.get_param('/x_step', 0.1)
+		self.y_step = rospy.get_param('/y_step', 0.1)
+		self.z_step = rospy.get_param('/z_step', 0.1)
 
 		#Make quit button
 		self.quit_button = Button(frame, text="Quit", command=frame.quit)
@@ -45,27 +45,27 @@ class App:
 		#Directional push buttons
 		self.push_buttons = list()
 
-		self.up_button = Button(frame, text="Up", command=lambda m="Up": self.push_callback(m))
+		self.up_button = Button(frame, text="+z", command=lambda m="+z": self.push_callback(m))
 		self.up_button.grid(row=1, column=0)
 		self.push_buttons.append(self.up_button)
 
-		self.down_button = Button(frame, text="Down", command=lambda m="Down": self.push_callback(m))
+		self.down_button = Button(frame, text="-z", command=lambda m="-z": self.push_callback(m))
 		self.down_button.grid(row=1, column=1)
 		self.push_buttons.append(self.down_button)
 
-		self.left_button = Button(frame, text="Left", command=lambda m="Left": self.push_callback(m))
+		self.left_button = Button(frame, text="+y", command=lambda m="+y": self.push_callback(m))
 		self.left_button.grid(row=2, column=0)
 		self.push_buttons.append(self.left_button)
 
-		self.right_button = Button(frame, text="Right", command=lambda m="Right": self.push_callback(m))
+		self.right_button = Button(frame, text="-y", command=lambda m="-y": self.push_callback(m))
 		self.right_button.grid(row=2, column=1)
 		self.push_buttons.append(self.right_button)
 
-		self.forward_button = Button(frame, text="Forward", command=lambda m="Forward": self.push_callback(m))
+		self.forward_button = Button(frame, text="+x", command=lambda m="+x": self.push_callback(m))
 		self.forward_button.grid(row=3, column=0)
 		self.push_buttons.append(self.forward_button)
 
-		self.back_button = Button(frame, text="Back", command=lambda m="Back": self.push_callback(m))
+		self.back_button = Button(frame, text="-x", command=lambda m="-x": self.push_callback(m))
 		self.back_button.grid(row=3, column=1)
 		self.push_buttons.append(self.back_button)
 
@@ -106,6 +106,9 @@ class App:
 		self.add_pos_button = Button(frame, text="Add", command=self.add_goal)
 		self.add_pos_button.grid(row=5, column=2)
 
+		self.drop_button = Button(frame, text="Drop", command=lambda m="-drop": self.push_callback(m))
+		self.drop_button.grid(row=5, column=3)
+
 	def stop_callback(self):
 		self.goal_pub.publish(self.position)
 
@@ -121,27 +124,35 @@ class App:
 			self.send_status_text.set('Co-ordinate is not float')
 			return
 
-
-
 	def push_callback(self, button=''):
 		if not hasattr(self, 'position'):
 			rospy.loginfo("No position - push not sent")
 			return
 		else:
-			if button == 'Up':
+			self.position.orientation.w = 0.1
+			if button == '+z':
 				self.position.position.z += self.z_step
-			elif button == 'Down':
+			elif button == '-z':
 				self.position.position.z -= self.z_step
-			elif button == 'Left':
+			elif button == '+x':
 				self.position.position.x += self.x_step
-			elif button == 'Right':
+			elif button == '-x':
 				self.position.position.x -= self.x_step
-			elif button == 'Forward':
+			elif button == '+y':
 				self.position.position.y += self.y_step
-			elif button == 'Back':
+			elif button == '-y':
 				self.position.position.y -= self.y_step
+			elif button == '-drop':
+				self.position.position.z -= 1
+				self.position.orientation.w = 0.1
+				self.push_pub.publish(self.position)
+				time.sleep(0.3)
+				self.position.position.z += 1.5
+				self.position.orientation.w = 0.1
+				time.sleep(0.1)
+				self.position.position.z -= 0.5
+				self.position.orientation.w = 0.1
 
-			self.position.orientation.w = 1
 			self.push_pub.publish(self.position)
 			rospy.loginfo("Sent push" + button)
 

@@ -21,13 +21,13 @@
   <node name="controller" pkg="qav250" type="qav250.py">
     <remap from="drone" to="/vicon/QAV_ORANGE/QAV_ORANGE" />
 
-    <param name="pitch/init_gains/kp" type="double" value="0.075" />
+    <param name="pitch/init_gains/kp" type="double" value="0.11" />
     <param name="pitch/init_gains/ki" type="double" value="0.02" />
-    <param name="pitch/init_gains/kd" type="double" value="0.11" />
+    <param name="pitch/init_gains/kd" type="double" value="0.14" />
 
-    <param name="roll/init_gains/kp" type="double" value="0.075" />
+    <param name="roll/init_gains/kp" type="double" value="0.11" />
     <param name="roll/init_gains/ki" type="double" value="0.02" />
-    <param name="roll/init_gains/kd" type="double" value="0.11" />
+    <param name="roll/init_gains/kd" type="double" value="0.14" />
 
     <param name="yaw/init_gains/kp" type="double" value="0.25" />
     <param name="yaw/init_gains/ki" type="double" value="0.0" />
@@ -35,9 +35,14 @@
 
     <param name="thrust/init_gains/kp" type="double" value="0.2" />
     <param name="thrust/init_gains/ki" type="double" value="0.03" />
-    <param name="thrust/init_gains/kd" type="double" value="0.15" />
+    <param name="thrust/init_gains/kd" type="double" value="0.18" />
 
   </node>
+
+  <node pkg="rospid" name="pitchtune" type="tune_gui.py" ns="controller/pitch" />
+  <node pkg="rospid" name="rolltune" type="tune_gui.py" ns="controller/roll" />
+  <node pkg="rospid" name="yawtune" type="tune_gui.py" ns="controller/yaw" />
+  <node pkg="rospid" name="thrusttune" type="tune_gui.py" ns="controller/thrust" />
 
 </launch>
   
