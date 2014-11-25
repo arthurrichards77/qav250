@@ -31,6 +31,8 @@ class qav250:
     self.ref_point = Point()
     # default is at origin, 0.8m off ground
     self.ref_point.z = 0.8
+    self.ref_point.x = rospy.get_param('init_x', 0.0)
+    self.ref_point.y = rospy.get_param('init_y', 0.0)
     # get min/max points
     self.min_x = rospy.get_param('/min_x', -5.0)
     self.min_y = rospy.get_param('/min_y', -5.0)
@@ -71,7 +73,7 @@ class qav250:
     self.current_pos = Point(data.transform.translation.x, data.transform.translation.y, data.transform.translation.z)
     #publish current target point to Rviz
     self.target_br.sendTransform((self.ref_point.x, self.ref_point.y, self.ref_point.z), 
-		(0.0, 0.0, 0.0, 1.0), rospy.Time.now(), "control_ref_point", "world")
+		(0.0, 0.0, 0.0, 1.0), rospy.Time.now(), rospy.get_namespace() + "/control_ref_point", "world")
     #rospy.loginfo('%s',data)
     # extract the time in seconds
     t = data.header.stamp.to_sec()

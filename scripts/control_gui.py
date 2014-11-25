@@ -14,11 +14,13 @@ class App:
 		frame.pack()
 
 		#Create publisher for push point
-		self.push_pub = rospy.Publisher('/goal_point', Pose)
+		self.push_pub = rospy.Publisher('goal_point', Pose)
 		#Create publisher for goal point
-		self.goal_pub = rospy.Publisher('/goal_point', Pose)
+		self.goal_pub = rospy.Publisher('goal_point', Pose)
 		#Initial position
 		self.position = Pose()
+		self.position.position.x = rospy.get_param('init_x', 0.0)
+		self.position.position.y = rospy.get_param('init_y', 0.0)
 		self.position.position.z = 0.8
 
 		#Get Min/Max values for x,y,z - Question mark over it is better to use these, or have some kind of check that a message has been set.
@@ -33,6 +35,9 @@ class App:
 		self.x_step = rospy.get_param('/x_step', 0.1)
 		self.y_step = rospy.get_param('/y_step', 0.1)
 		self.z_step = rospy.get_param('/z_step', 0.1)
+
+		#Get dwell time for drop manouevre
+		self.drop_dwell = rospy.get_param('/drop_dwell', 0.3)
 
 		#Make quit button
 		self.quit_button = Button(frame, text="Quit", command=frame.quit)
@@ -109,6 +114,43 @@ class App:
 		self.drop_button = Button(frame, text="Drop", command=lambda m="-drop": self.push_callback(m))
 		self.drop_button.grid(row=5, column=3)
 
+		#Position feedback
+		self.x_pos_text = StringVar()
+		self.x_pos_text.set('0.0')
+		self.x_pos_label = Label(frame, textvariable=self.x_pos_text)
+		self.x_pos_label.grid(row=6, column=5)
+		self.x_pos_label = Label(frame, text="X")
+		self.x_pos_label.grid(row=5, column=5)
+
+		self.y_pos_text = StringVar()
+		self.y_pos_text.set('0.0')
+		self.y_pos_label = Label(frame, textvariable=self.y_pos_text)
+		self.y_pos_label.grid(row=6, column=6)
+		self.y_pos_label = Label(frame, text="Y")
+		self.y_pos_label.grid(row=5, column=6)
+
+		self.z_pos_text = StringVar()
+		self.z_pos_text.set('0.0')
+		self.z_pos_label = Label(frame, textvariable=self.z_pos_text)
+		self.z_pos_label.grid(row=6, column=7)
+		self.z_pos_label = Label(frame, text="Z")
+		self.z_pos_label.grid(row=5, column=7)
+
+		#Drop dwell entry
+		self.dwell_label = Label(frame, text='Drop dwell time')
+		self.dwell_label.grid(row=10, column=6, padx=10, pady=10) 
+		self.dwell_entry = Entry(frame, validate="key", validatecommand=vcmd)
+		self.dwell_entry.grid(row=10, column=7, padx=10, pady=10)
+
+		self.update_dwell = Button(frame, text="Update dwell", command=self.update_dwell)
+		self.update_dwell.grid(row=10, column=5)
+
+	def update_dwell(self):
+		try:
+			self.drop_dwell = float(self.dwell_entry.get())
+		except ValueError:
+			rospy.loginfo("Invalid drop sent")
+
 	def stop_callback(self):
 		self.goal_pub.publish(self.position)
 
@@ -143,17 +185,16 @@ class App:
 			elif button == '-y':
 				self.position.position.y -= self.y_step
 			elif button == '-drop':
-				self.position.position.z -= 1
+				old_pos_z = self.position.position.z
+				self.position.position.z = 0.1
 				self.position.orientation.w = 0.1
-				self.push_pub.publish(self.position)
-				time.sleep(0.3)
-				self.position.position.z += 1.5
-				self.position.orientation.w = 0.1
-				time.sleep(0.1)
-				self.position.position.z -= 0.5
+				self.send_goal()
+				time.sleep(self.drop_dwell)
+				self.position.position.z = old_pos_z
 				self.position.orientation.w = 0.1
 
-			self.push_pub.publish(self.position)
+
+			self.send_goal()
 			rospy.loginfo("Sent push" + button)
 
 	def send_goal(self):
@@ -185,15 +226,12 @@ class App:
 				return
 
 			#We have floats within the valid area - send the position
-			new_position = Pose()
-			new_position.position.x = x
-			new_position.position.y = y
-			new_position.position.z = z
-			new_position.orientation.w = 1
+			self.position.position.x = x
+			self.position.position.y = y
+			self.position.position.z = z
+			self.position.orientation.w = 1
 
-			self.position = new_position
-
-			self.goal_pub.publish(new_position)
+			self.send_goal()
 			self.send_status_text.set('Position sent')
 			rospy.loginfo("New position sent:(%2.2f, %2.2f, %2.2f" % (new_position.position.x, new_position.position.y, new_position.position.z))
 
@@ -220,6 +258,12 @@ class App:
 		#Reject everything else
 		else:
 			return False
+
+	def send_goal(self):
+		self.goal_pub.publish(self.position)
+		self.x_pos_text.set("%2.2f" % self.position.position.x)
+		self.y_pos_text.set("%2.2f" % self.position.position.y)
+		self.z_pos_text.set("%2.2f" % self.position.position.z)
 
 
 def main():

@@ -27,14 +27,14 @@ class TrajectoryGen:
 		self.position_tolerance = rospy.get_param('position_tolerance', 0.005)
 		self.update_freq = rate
 		#Subscribe to position and goalpoint
-		self.goal_sub = rospy.Subscriber('/goal_point', Pose, self.goal_callback)
+		self.goal_sub = rospy.Subscriber('goal_point', Pose, self.goal_callback)
 		#Publisher for interpolated point
-		self.ref_pub = rospy.Publisher('/refpoint', Point)
+		self.ref_pub = rospy.Publisher('refpoint', Point)
 		#Initialise with no goal
 		self.goal = None
 		self.position = Pose()
-		self.position.position.x = 0.0
-		self.position.position.y = 0.0
+		self.position.position.x = rospy.get_param('init_x', 0.0)
+		self.position.position.y = rospy.get_param('init_y', 0.0)
 		self.position.position.z = 0.8
 		#RViz broadcaster for goal/ref points
 		self.goal_br = tf.TransformBroadcaster()
@@ -48,7 +48,7 @@ class TrajectoryGen:
 		#Also publish the goal to Rviz
 		if self.goal is not None:
 			self.gen_trajectory()
-			self.goal_br.sendTransform((self.goal.position.x, self.goal.position.y, self.goal.position.z),(0.0, 0.0, 0.0, 1.0),rospy.Time.now(),"target","world")
+			self.goal_br.sendTransform((self.goal.position.x, self.goal.position.y, self.goal.position.z),(0.0, 0.0, 0.0, 1.0),rospy.Time.now(),rospy.get_namespace()+"/target","world")
 
 	def goal_callback(self, data):
 		#Update end goal - might want to put some conditioning on this?
