@@ -37,6 +37,11 @@
 
   </node>
 
+  <node pkg="rospid" name="pitchtune" type="tune_gui.py" ns="controller/pitch" />
+  <node pkg="rospid" name="rolltune" type="tune_gui.py" ns="controller/roll" />
+  <node pkg="rospid" name="yawtune" type="tune_gui.py" ns="controller/yaw" />
+  <node pkg="rospid" name="thrusttune" type="tune_gui.py" ns="controller/thrust" />
+
 
 
 </launch>

@@ -7,6 +7,7 @@ roslib.load_manifest('qav250')
 import tf
 from geometry_msgs.msg import Point, TransformStamped, Pose
 from nav_msgs.msg import Path
+from std_msgs.msg import Bool
 
 class App:
 	def __init__(self, master):
@@ -17,6 +18,8 @@ class App:
 		self.push_pub = rospy.Publisher('goal_point', Pose)
 		#Create publisher for goal point
 		self.goal_pub = rospy.Publisher('goal_point', Pose)
+		#Create publisher to freeze integator
+                self.freeze_int_pub = rospy.Publisher('freeze_int', Bool)
 		#Initial position
 		self.position = Pose()
 		self.position.position.x = rospy.get_param('init_x', 0.0)
@@ -100,7 +103,7 @@ class App:
 		self.z_entry = Entry(frame, validate="key", validatecommand=vcmd)
 		self.z_entry.grid(row=3, column=3, padx=10, pady=10)
 
-		self.send_pos_button = Button(frame, text="Send", command=self.send_goal)
+		self.send_pos_button = Button(frame, text="Send", command=self.send_position)
 		self.send_pos_button.grid(row=4, column=2)
 
 		self.send_status_text = StringVar()
@@ -185,6 +188,7 @@ class App:
 			elif button == '-y':
 				self.position.position.y -= self.y_step
 			elif button == '-drop':
+                                self.freeze_int_pub.publish(True)
 				old_pos_z = self.position.position.z
 				self.position.position.z = 0.1
 				self.position.orientation.w = 0.1
@@ -192,13 +196,14 @@ class App:
 				time.sleep(self.drop_dwell)
 				self.position.position.z = old_pos_z
 				self.position.orientation.w = 0.1
+                                self.freeze_int_pub.publish(False)
 
 
-			self.send_goal()
-			rospy.loginfo("Sent push" + button)
+		self.send_goal()
+		rospy.loginfo("Sent push" + button)
 
-	def send_goal(self):
-
+	def send_position(self):
+		
 		#Ensure each co-ordinate is a valid float
 		try:
 			x = float(self.x_entry.get())

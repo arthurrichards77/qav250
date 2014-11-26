@@ -9,6 +9,7 @@ import numpy as np
 from rospy.numpy_msg import numpy_msg
 from rospy_tutorials.msg import Floats
 from geometry_msgs.msg import TransformStamped, Point
+from std_msgs.msg import Bool
 
 class qav250:
 
@@ -20,6 +21,8 @@ class qav250:
     self.vicon_sub = rospy.Subscriber('drone', TransformStamped, self.vicon_callback)
     # subscriber for reference point input
     self.point_sub = rospy.Subscriber('refpoint', Point, self.ref_callback)
+    # subscriber for integrator freeze
+    self.freeze_int = rospy.Subscriber('freeze_int', Bool, self.freeze_int_callback)
     # PID controller for each axis
     self.pitch_pid = rospidlib.Rospid(0.075,0.0,0.11,'~pitch') # pitch
     self.roll_pid = rospidlib.Rospid(0.075,0.0,0.11,'~roll') # roll
@@ -108,6 +111,12 @@ class qav250:
     rc_ctrl = numpy.array([c_roll,c_pitch,c_thrust,c_yaw,0.0,0.0,0.0,0.0], dtype=numpy.float32)
     # send it to the bridge
     self.rc_pub.publish(rc_ctrl)
+
+  def freeze_int_callback(self, data):
+    if data:
+      self.thrust_pid.freeze_integrator()
+    else:
+      self.thrust_pid.enable_integrator()
 
 if __name__ == "__main__":
   q = qav250()
