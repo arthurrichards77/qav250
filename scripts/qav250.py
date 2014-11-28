@@ -102,7 +102,7 @@ class qav250:
     c_pitch = 0.5 + rospidlib.saturate(u_pitch,0.25)
     c_yaw = 0.5 + rospidlib.saturate(u_yaw,0.25)
     # except thrust, centered around something bigger
-    c_thrust = 0.6 + rospidlib.saturate(u_thrust,0.25)
+    c_thrust = 0.6 + rospidlib.saturate(u_thrust,0.35)
     # print data.transform.translation.x, 0.0, t, u_roll
     rospy.loginfo('(Roll pitch yaw) = (%f %f %f) Thrust = %f',u_roll, u_pitch, u_yaw, u_thrust)
     # rospy.loginfo('Thrust integrator = %f', self.thrust_pid.read_integrator())

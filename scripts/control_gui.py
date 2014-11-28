@@ -213,11 +213,11 @@ class App:
 			elif button == '-drop':
                                 self.freeze_int_pub.publish(True)
 				old_pos_z = self.position.position.z
-				self.position.position.z = 0.1
-				self.position.orientation.w = 0.1
-				self.send_goal()
-				time.sleep(self.drop_dwell)
-				self.position.position.z = 2.0
+				#self.position.position.z = 0.1
+				#self.position.orientation.w = 0.1
+				#self.send_goal()
+				#time.sleep(self.drop_dwell)
+				self.position.position.z = 3.0
 				self.position.orientation.w = 0.1
 				self.send_goal()
 				time.sleep(self.up_dwell)
