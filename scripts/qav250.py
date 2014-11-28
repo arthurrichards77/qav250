@@ -32,8 +32,8 @@ class qav250:
     self.thrust_pid.freeze_integrator()
     # point reference input
     self.ref_point = Point()
-    # default is at origin, 0.8m off ground
-    self.ref_point.z = 0.8
+    # default is at origin, 1.8m off ground
+    self.ref_point.z = rospy.get_param('init_z', 0.8)
     self.ref_point.x = rospy.get_param('init_x', 0.0)
     self.ref_point.y = rospy.get_param('init_y', 0.0)
     # get min/max points
@@ -81,8 +81,8 @@ class qav250:
     # extract the time in seconds
     t = data.header.stamp.to_sec()
     # t = data.header.stamp
-    # only enable integral action when over 20cm off ground - to avoid wind-up
-    if data.transform.translation.z>0.3:
+    # only enable integral action when over 130cm off ground - to avoid wind-up
+    if data.transform.translation.z>1.3:
       self.pitch_pid.enable_integrator()
       self.roll_pid.enable_integrator()
       self.yaw_pid.enable_integrator()
@@ -102,7 +102,7 @@ class qav250:
     c_pitch = 0.5 + rospidlib.saturate(u_pitch,0.25)
     c_yaw = 0.5 + rospidlib.saturate(u_yaw,0.25)
     # except thrust, centered around something bigger
-    c_thrust = 0.6 + rospidlib.saturate(u_thrust,0.15)
+    c_thrust = 0.6 + rospidlib.saturate(u_thrust,0.25)
     # print data.transform.translation.x, 0.0, t, u_roll
     rospy.loginfo('(Roll pitch yaw) = (%f %f %f) Thrust = %f',u_roll, u_pitch, u_yaw, u_thrust)
     # rospy.loginfo('Thrust integrator = %f', self.thrust_pid.read_integrator())

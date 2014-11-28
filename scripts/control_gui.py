@@ -24,7 +24,7 @@ class App:
 		self.position = Pose()
 		self.position.position.x = rospy.get_param('init_x', 0.0)
 		self.position.position.y = rospy.get_param('init_y', 0.0)
-		self.position.position.z = 0.8
+		self.position.position.z = rospy.get_param('init_z', 0.8)
 
 		#Get Min/Max values for x,y,z
 		self.min_x = rospy.get_param('/min_x', -5.0)
@@ -32,7 +32,7 @@ class App:
 		self.min_y = rospy.get_param('/min_y', -5.0)
 		self.max_y = rospy.get_param('/max_y', 5.0)
 		self.min_z = rospy.get_param('/min_z', 0.0)
-		self.max_z = rospy.get_param('/max_z', 2.0)
+		self.max_z = rospy.get_param('/max_z', 5.0)
 
 		#Get step sizes
 		self.x_step = rospy.get_param('/x_step', 0.1)
