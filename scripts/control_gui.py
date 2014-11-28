@@ -42,7 +42,7 @@ class App:
 		#Get dwell time for drop manouevre
 		self.drop_dwell = rospy.get_param('/drop_dwell', 0.6)
 		#Get up drell time for drop manoeuvre
-		#self.up_dwell = rospy.get_param('/up_dwell', 0.2)
+		self.up_dwell = rospy.get_param('/up_dwell', 0.2)
 
 		#Make quit button
 		self.quit_button = Button(frame, text="Quit", command=frame.quit)
@@ -154,14 +154,28 @@ class App:
 		self.dwell_entry = Entry(frame, validate="key", validatecommand=vcmd)
 		self.dwell_entry.grid(row=100, column=101, padx=10, pady=10)
 
-		self.update_dwell = Button(frame, text="Update dwell", command=self.update_dwell)
+		self.update_dwell = Button(frame, text="Update drop dwell", command=self.update_dwell)
 		self.update_dwell.grid(row=100, column=102)
+
+		self.up_dwell_label = Label(frame, text='Up dwell time')
+		self.up_dwell_label.grid(row=101, column=100, padx=10, pady=10) 
+		self.up_dwell_entry = Entry(frame, validate="key", validatecommand=vcmd)
+		self.up_dwell_entry.grid(row=101, column=101, padx=10, pady=10)
+
+		self.update_up_dwell = Button(frame, text="Update up dwell", command=self.update_up_dwell)
+		self.update_up_dwell.grid(row=101, column=102)
 
 	def update_dwell(self):
 		try:
 			self.drop_dwell = float(self.dwell_entry.get())
 		except ValueError:
 			rospy.loginfo("Invalid drop sent")
+
+	def update_up_dwell(self):
+		try:
+			self.up_dwell = float(self.up_dwell_entry.get())
+		except ValueError:
+			rospy.loginfo("Invalid up dwell sent")
 
 	def stop_callback(self):
 		self.goal_pub.publish(self.position)
@@ -203,10 +217,10 @@ class App:
 				self.position.orientation.w = 0.1
 				self.send_goal()
 				time.sleep(self.drop_dwell)
-				#self.position.position.z = 2.0
-				#self.position.orientation.w = 0.1
-				#self.send_goal()
-				#time.sleep(self.up_dwell)
+				self.position.position.z = 2.0
+				self.position.orientation.w = 0.1
+				self.send_goal()
+				time.sleep(self.up_dwell)
 				self.position.position.z = old_pos_z
 				self.position.orientation.w = 0.1
                                 self.freeze_int_pub.publish(False)
