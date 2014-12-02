@@ -2,25 +2,29 @@
 
   <include file="$(find vicon_bridge)/launch/vicon.launch" />
   <node name="rviz" pkg="rviz" type="rviz" />
+  <arg name="drone1" value="QAV_GREEN" />
+  <arg name="drone2" value="QAV_BLUE" />
 
-  <group ns="ORANGE">
+  <group ns="GREEN">
+
 	  <node name="rcbridge" pkg="rcbridge" type="rcbridge.py">
 	    <rosparam param="failsafe">[0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5]</rosparam>
-	    <param name="ipaddr" value="192.168.10.171" />
+	    <param name="~ipaddr" value="192.168.10.171" />
 	  </node>
 
 	  <node name="control_gui" pkg="qav250" type="control_gui.py">
-	    <remap from="drone" to="/vicon/QAV_ORANGE/QAV_ORANGE" />
+	    <remap from="drone" to="/vicon/$(arg drone1)/$(arg drone1)" />
 	  </node>
 
 	  <node name="trajectory_generator" pkg="qav250" type="trajectory_generator.py">
-	    <remap from="drone" to="/vicon/QAV_ORANGE/QAV_ORANGE" />
+	    <remap from="drone" to="/vicon/$(arg drone1)/$(arg drone1)" />
 	  </node>
 
-	  <param name="init_y" type="double" value="-2.0" />
+	  <param name="init_x" type="double" value="-0.05" />
+	  <param name="init_y" type="double" value="-2.7" />
 
 	    <node name="controller" pkg="qav250" type="qav250.py">
-	    <remap from="drone" to="/vicon/QAV_ORANGE/QAV_ORANGE" />
+	    <remap from="drone" to="/vicon/$(arg drone1)/$(arg drone1)" />
 
 	    <param name="pitch/init_gains/kp" type="double" value="0.11" />
 	    <param name="pitch/init_gains/ki" type="double" value="0.02" />
@@ -41,22 +45,22 @@
 	  </node>
   </group>
 
-  <group ns="GREEN">
+  <group ns="BLUE">
 	  <node name="rcbridge" pkg="rcbridge" type="rcbridge.py">
 	    <rosparam param="failsafe">[0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5]</rosparam>
-	    <param name="ipaddr" value="192.168.10.172" />
+	    <param name="~ipaddr" value="192.168.10.172" />
 	  </node>
 
 	  <node name="control_gui" pkg="qav250" type="control_gui.py">
-	    <remap from="drone" to="/vicon/QAV_GREEN/QAV_GREEN" />
+	    <remap from="drone" to="/vicon/$(arg drone2)/$(arg drone2)" />
 	  </node>
 
 	  <node name="trajectory_generator" pkg="qav250" type="trajectory_generator.py">
-	    <remap from="drone" to="/vicon/QAV_GREEN/QAV_GREEN" />
+	    <remap from="drone" to="/vicon/$(arg drone2)/$(arg drone2)" />
 	  </node>
 
 	  <node name="controller" pkg="qav250" type="qav250.py">
-	    <remap from="drone" to="/vicon/QAV_GREEN/QAV_GREEN" />
+	    <remap from="drone" to="/vicon/$(arg drone2)/$(arg drone2)" />
 
 	    <param name="pitch/init_gains/kp" type="double" value="0.11" />
 	    <param name="pitch/init_gains/ki" type="double" value="0.02" />

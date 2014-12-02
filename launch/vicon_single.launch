@@ -1,0 +1,44 @@
+<launch>
+
+  <arg name="drone" value="QAV_BLUE" />
+  <include file="$(find vicon_bridge)/launch/vicon.launch" />
+  <node name="rviz" pkg="rviz" type="rviz" />
+
+	  <node name="rcbridge" pkg="rcbridge" type="rcbridge.py">
+	    <rosparam param="failsafe">[0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5]</rosparam>
+	    <param name="ipaddr" value="192.168.10.172" />
+	  </node>
+
+	  <node name="control_gui" pkg="qav250" type="control_gui.py">
+	    <remap from="drone" to="/vicon/$(arg drone)/$(arg drone)" />
+	  </node>
+
+	  <node name="trajectory_generator" pkg="qav250" type="trajectory_generator.py">
+	    <remap from="drone" to="/vicon/$(arg drone)/$(arg drone)" />
+	  </node>
+
+          <param name="init_z" type="double" value="1.6" />
+
+	  <node name="controller" pkg="qav250" type="qav250.py">
+	    <remap from="drone" to="/vicon/$(arg drone)/$(arg drone)" />
+
+	    <param name="pitch/init_gains/kp" type="double" value="0.11" />
+	    <param name="pitch/init_gains/ki" type="double" value="0.02" />
+	    <param name="pitch/init_gains/kd" type="double" value="0.14" />
+
+	    <param name="roll/init_gains/kp" type="double" value="0.11" />
+	    <param name="roll/init_gains/ki" type="double" value="0.02" />
+	    <param name="roll/init_gains/kd" type="double" value="0.14" />
+
+	    <param name="yaw/init_gains/kp" type="double" value="0.25" />
+	    <param name="yaw/init_gains/ki" type="double" value="0.0" />
+	    <param name="yaw/init_gains/kd" type="double" value="0.0" />
+
+	    <param name="thrust/init_gains/kp" type="double" value="0.2" />
+	    <param name="thrust/init_gains/ki" type="double" value="0.03" />
+	    <param name="thrust/init_gains/kd" type="double" value="0.18" />
+
+	  </node>
+
+</launch>
+  

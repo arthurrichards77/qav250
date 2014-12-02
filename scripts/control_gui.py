@@ -7,7 +7,8 @@ roslib.load_manifest('qav250')
 import tf
 from geometry_msgs.msg import Point, TransformStamped, Pose
 from nav_msgs.msg import Path
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, Empty
+import midi_listener
 
 class App:
 	def __init__(self, master):
@@ -20,6 +21,9 @@ class App:
 		#Create publisher to freeze integator
                 self.freeze_int_pub = rospy.Publisher('freeze_int', Bool)
 
+		#Create subscriber to listen for drop message
+		self.drop_sub = rospy.Subscriber('drop', Empty, self.drop_callback)
+
 		#Initial position
 		self.position = Pose()
 		self.position.position.x = rospy.get_param('init_x', 0.0)
@@ -27,22 +31,20 @@ class App:
 		self.position.position.z = rospy.get_param('init_z', 0.8)
 
 		#Get Min/Max values for x,y,z
-		self.min_x = rospy.get_param('/min_x', -5.0)
-		self.max_x = rospy.get_param('/max_x', 5.0)
-		self.min_y = rospy.get_param('/min_y', -5.0)
-		self.max_y = rospy.get_param('/max_y', 5.0)
-		self.min_z = rospy.get_param('/min_z', 0.0)
-		self.max_z = rospy.get_param('/max_z', 5.0)
+		self.min_x = rospy.get_param('min_x', -5.0)
+		self.max_x = rospy.get_param('max_x', 5.0)
+		self.min_y = rospy.get_param('min_y', -5.0)
+		self.max_y = rospy.get_param('max_y', 5.0)
+		self.min_z = rospy.get_param('min_z', 0.0)
+		self.max_z = rospy.get_param('max_z', 5.0)
 
 		#Get step sizes
-		self.x_step = rospy.get_param('/x_step', 0.1)
-		self.y_step = rospy.get_param('/y_step', 0.1)
-		self.z_step = rospy.get_param('/z_step', 0.1)
+		self.x_step = rospy.get_param('x_step', 0.1)
+		self.y_step = rospy.get_param('y_step', 0.1)
+		self.z_step = rospy.get_param('z_step', 0.1)
 
-		#Get dwell time for drop manouevre
-		self.drop_dwell = rospy.get_param('/drop_dwell', 0.6)
 		#Get up drell time for drop manoeuvre
-		self.up_dwell = rospy.get_param('/up_dwell', 0.2)
+		self.up_dwell = rospy.get_param('up_dwell', 0.2)
 
 		#Make quit button
 		self.quit_button = Button(frame, text="Quit", command=frame.quit)
@@ -50,7 +52,7 @@ class App:
 
 		#Make stop button
 		self.stop_button = Button(frame, text="Stop", command=self.stop_callback)
-		self.stop_button.grid(row=101, column=2)
+		self.stop_button.grid(row=101, column=1)
 
 		#Directional push buttons
 		self.push_buttons = list()
@@ -84,19 +86,11 @@ class App:
 		self.land_button.grid(row=100, column=0)
 
 		self.takeoff_button = Button(frame, text="Land", command=self.land_callback)
-		self.takeoff_button.grid(row=101, column=1)
-
-		#Button to go to position above target
-		self.add_pos_button = Button(frame, text="Go above pad", command=self.add_goal)
-		self.add_pos_button.grid(row=100, column=1)
+		self.takeoff_button.grid(row=101, column=0)
 
 		#Drop on to target
-		self.drop_button = Button(frame, text="Drop", command=lambda m="-drop": self.push_callback(m))
-		self.drop_button.grid(row=100, column=2)
-
-		#Button to return to landing pad
-		self.add_pos_button = Button(frame, text="Go above pad", command=self.add_goal)
-		self.add_pos_button.grid(row=101, column=0)
+		self.drop_button = Button(frame, text="Play Sound", command=lambda m="-drop": self.push_callback(m))
+		self.drop_button.grid(row=100, column=1)
 
 		#Fixed positional input entry boxes
 		#Create label
@@ -149,13 +143,6 @@ class App:
 
 
 		#Drop dwell entry
-		self.dwell_label = Label(frame, text='Drop dwell time')
-		self.dwell_label.grid(row=100, column=100, padx=10, pady=10) 
-		self.dwell_entry = Entry(frame, validate="key", validatecommand=vcmd)
-		self.dwell_entry.grid(row=100, column=101, padx=10, pady=10)
-
-		self.update_dwell = Button(frame, text="Update drop dwell", command=self.update_dwell)
-		self.update_dwell.grid(row=100, column=102)
 
 		self.up_dwell_label = Label(frame, text='Up dwell time')
 		self.up_dwell_label.grid(row=101, column=100, padx=10, pady=10) 
@@ -164,12 +151,6 @@ class App:
 
 		self.update_up_dwell = Button(frame, text="Update up dwell", command=self.update_up_dwell)
 		self.update_up_dwell.grid(row=101, column=102)
-
-	def update_dwell(self):
-		try:
-			self.drop_dwell = float(self.dwell_entry.get())
-		except ValueError:
-			rospy.loginfo("Invalid drop sent")
 
 	def update_up_dwell(self):
 		try:
@@ -213,10 +194,6 @@ class App:
 			elif button == '-drop':
                                 self.freeze_int_pub.publish(True)
 				old_pos_z = self.position.position.z
-				#self.position.position.z = 0.1
-				#self.position.orientation.w = 0.1
-				#self.send_goal()
-				#time.sleep(self.drop_dwell)
 				self.position.position.z = 3.0
 				self.position.orientation.w = 0.1
 				self.send_goal()
@@ -301,7 +278,11 @@ class App:
 		self.y_pos_text.set("%2.2f" % self.position.position.y)
 		self.z_pos_text.set("%2.2f" % self.position.position.z)
 
-
+	def drop_callback(self, data):
+		m= '-drop'
+		self.push_callback(m)
+	
+		
 def main():
 	# "main" code - sloppy but ok for now
 	rospy.init_node('control_gui', anonymous=True)

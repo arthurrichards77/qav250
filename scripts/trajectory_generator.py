@@ -107,7 +107,7 @@ def main():
 	# "main" code - sloppy but ok for now
 	rospy.init_node('trajectoryGenerator', anonymous=True)
 	TG = TrajectoryGen()
-	update_freq = rospy.get_param('/update_frequency', 10)
+	update_freq = rospy.get_param('update_frequency', 10)
 	r = rospy.Rate(update_freq)
 	TG.rate = update_freq
 
