@@ -1,12 +1,12 @@
 <launch>
 
-  <arg name="drone" value="QAV_BLUE" />
+  <arg name="drone" value="QAV_YELLOW" />
   <include file="$(find vicon_bridge)/launch/vicon.launch" />
   <node name="rviz" pkg="rviz" type="rviz" />
 
 	  <node name="rcbridge" pkg="rcbridge" type="rcbridge.py">
 	    <rosparam param="failsafe">[0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5]</rosparam>
-	    <param name="ipaddr" value="192.168.10.172" />
+	    <param name="ipaddr" value="192.168.10.171" />
 	  </node>
 
 	  <node name="control_gui" pkg="qav250" type="control_gui.py">
@@ -17,7 +17,11 @@
 	    <remap from="drone" to="/vicon/$(arg drone)/$(arg drone)" />
 	  </node>
 
-          <param name="init_z" type="double" value="1.6" />
+	  <node name="server" pkg="qav250" type="server.py">
+	    <remap from="drone" to="/vicon/$(arg drone)/$(arg drone)" />
+	  </node>
+		
+          <param name="init_z" type="double" value="1.5" />
 
 	  <node name="controller" pkg="qav250" type="qav250.py">
 	    <remap from="drone" to="/vicon/$(arg drone)/$(arg drone)" />

@@ -8,7 +8,7 @@ import tf
 from geometry_msgs.msg import Point, TransformStamped, Pose
 from nav_msgs.msg import Path
 from std_msgs.msg import Bool, Empty
-import midi_listener
+#import midi_listener
 
 class App:
 	def __init__(self, master):
@@ -22,7 +22,7 @@ class App:
                 self.freeze_int_pub = rospy.Publisher('freeze_int', Bool)
 
 		#Create subscriber to listen for drop message
-		self.drop_sub = rospy.Subscriber('drop', Empty, self.drop_callback)
+		self.drop_sub = rospy.Subscriber('drone/drop', Empty, self.drop_callback)
 
 		#Initial position
 		self.position = Pose()
@@ -44,7 +44,7 @@ class App:
 		self.z_step = rospy.get_param('z_step', 0.1)
 
 		#Get up drell time for drop manoeuvre
-		self.up_dwell = rospy.get_param('up_dwell', 0.2)
+		self.up_dwell = rospy.get_param('up_dwell', 0.4)
 
 		#Make quit button
 		self.quit_button = Button(frame, text="Quit", command=frame.quit)

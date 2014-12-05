@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from OSC import OSCServer
 import sys
 from time import sleep
@@ -9,7 +9,7 @@ from std_msgs.msg import Empty
 rospy.init_node('midi_listener')
 midi_pub = rospy.Publisher('drone/drop', Empty)
 
-server = OSCServer( ("localhost", 7110) )
+server = OSCServer( ("192.168.1.3", 7110) )
 server.timeout = 0
 run = True
 
@@ -35,9 +35,16 @@ def user_callback(path, tags, args, source):
 
 server.addMsgHandler( "/startup", user_callback )
 
+def each_frame():
+    # clear timed_out flag
+    server.timed_out = False
+    # handle all pending requests then return
+    while not server.timed_out:
+        server.handle_request()
+
 # Loop forever
 while run:
     # do the game stuff:
-    sleep(1)
+    each_frame()
 
 server.close()
